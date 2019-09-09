@@ -1,0 +1,3 @@
+[submodule "IDNNs"]
+	path = IDNNs
+	url = git@github.com:ravidziv/IDNNs.git
