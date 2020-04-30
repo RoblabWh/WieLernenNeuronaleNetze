@@ -13,5 +13,7 @@ dependencies:
   - pillow
   - jupyterlab
   - keras
+  - pip:
+    - -e ./IDNNs-notebook
 prefix: /home/robin/miniconda3/envs/wvin
 
