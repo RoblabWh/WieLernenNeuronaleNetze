@@ -15,18 +15,18 @@ NUM_CORES = multiprocessing.cpu_count()
 from idnns.information.mutual_information_calculation import *
 
 
-def calc_information_for_layer(data, bins, unique_inverse_x, unique_inverse_y, pxs, pys1):
-	bins = bins.astype(np.float32)
-	digitized = bins[np.digitize(np.squeeze(data.reshape(1, -1)), bins) - 1].reshape(len(data), -1)
-	b2 = np.ascontiguousarray(digitized).view(
-		np.dtype((np.void, digitized.dtype.itemsize * digitized.shape[1])))
-	unique_array, unique_inverse_t, unique_counts = \
-		np.unique(b2, return_index=False, return_inverse=True, return_counts=True)
-	p_ts = unique_counts / float(sum(unique_counts))
-	PXs, PYs = np.asarray(pxs).T, np.asarray(pys1).T
-	local_IXT, local_ITY = calc_information_from_mat(PXs, PYs, p_ts, digitized, unique_inverse_x, unique_inverse_y,
-	                                                 unique_array)
-	return local_IXT, local_ITY
+# def calc_information_for_layer(data, bins, unique_inverse_x, unique_inverse_y, pxs, pys1):
+# 	bins = bins.astype(np.float32)
+# 	digitized = bins[np.digitize(np.squeeze(data.reshape(1, -1)), bins) - 1].reshape(len(data), -1)
+# 	b2 = np.ascontiguousarray(digitized).view(
+# 		np.dtype((np.void, digitized.dtype.itemsize * digitized.shape[1])))
+# 	unique_array, unique_inverse_t, unique_counts = \
+# 		np.unique(b2, return_index=False, return_inverse=True, return_counts=True)
+# 	p_ts = unique_counts / float(sum(unique_counts))
+# 	PXs, PYs = np.asarray(pxs).T, np.asarray(pys1).T
+# 	local_IXT, local_ITY = calc_information_from_mat(PXs, PYs, p_ts, digitized, unique_inverse_x, unique_inverse_y,
+# 	                                                 unique_array)
+# 	return local_IXT, local_ITY
 
 
 def calc_information_sampling(data, bins, pys1, pxs, label, b, b1, len_unique_a, p_YgX, unique_inverse_x,
@@ -180,7 +180,7 @@ def extract_probs(label, x):
 
 
 def get_information(ws, x, label, num_of_bins, interval_information_display, model, layerSize,
-                    calc_parallel=True, py_hats=0):
+                    calc_parallel=False, py_hats=0):
 	"""Calculate the information for the network for all the epochs and all the layers"""
 	print('Start calculating the information...')
 	bins = np.linspace(-1, 1, num_of_bins)

@@ -30,6 +30,7 @@ def calc_condtion_entropy(px, t_data, unique_inverse_x):
 
 def calc_information_from_mat(px, py, ps2, data, unique_inverse_x, unique_inverse_y, unique_array):
 	"""Calculate the MI based on binning of the data"""
+	# ps2: Props of the binned data
 	H2 = -np.sum(ps2 * np.log2(ps2))
 	H2X = calc_condtion_entropy(px, data, unique_inverse_x)
 	H2Y = calc_condtion_entropy(py.T, data, unique_inverse_y)
