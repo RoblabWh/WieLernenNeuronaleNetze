@@ -62,12 +62,12 @@ def calc_information_for_layer_with_other(data, bins, unique_inverse_x, unique_i
 	local_IXT, local_ITY = calc_information_sampling(data, bins, pys1, pxs, label, b, b1,
 	                                                 len_unique_a, p_YgX, unique_inverse_x,
 	                                                 unique_inverse_y)
-	number_of_indexs = int(data.shape[1] * (1. / 100 * percent_of_sampling))
-	indexs_of_sampls = np.random.choice(data.shape[1], number_of_indexs, replace=False)
-	if percent_of_sampling != 100:
-		sampled_data = data[:, indexs_of_sampls]
-		#sampled_local_IXT, sampled_local_ITY = calc_information_sampling(
-		#	sampled_data, bins, pys1, pxs, label, b, b1, len_unique_a, p_YgX, unique_inverse_x, unique_inverse_y)
+	# number_of_indexs = int(data.shape[1] * (1. / 100 * percent_of_sampling))
+	# indexs_of_sampls = np.random.choice(data.shape[1], number_of_indexs, replace=False)
+	# if percent_of_sampling != 100:
+	# 	sampled_data = data[:, indexs_of_sampls]
+	# 	#sampled_local_IXT, sampled_local_ITY = calc_information_sampling(
+	# 	#	sampled_data, bins, pys1, pxs, label, b, b1, len_unique_a, p_YgX, unique_inverse_x, unique_inverse_y)
 
 	params = {}
 	params['local_IXT'] = local_IXT
@@ -75,31 +75,31 @@ def calc_information_for_layer_with_other(data, bins, unique_inverse_x, unique_i
 	return params
 
 
-def calc_by_sampling_neurons(ws_iter_index, num_of_samples, label, sigma, bins, pxs):
-	iter_infomration = []
-	for j in range(len(ws_iter_index)):
-		data = ws_iter_index[j]
-		new_data = np.zeros((num_of_samples * data.shape[0], data.shape[1]))
-		labels = np.zeros((num_of_samples * label.shape[0], label.shape[1]))
-		x = np.zeros((num_of_samples * data.shape[0], 2))
-		for i in range(data.shape[0]):
-			cov_matrix = np.eye(data[i, :].shape[0]) * sigma
-			t_i = np.random.multivariate_normal(data[i, :], cov_matrix, num_of_samples)
-			new_data[num_of_samples * i:(num_of_samples * (i + 1)), :] = t_i
-			labels[num_of_samples * i:(num_of_samples * (i + 1)), :] = label[i, :]
-			x[num_of_samples * i:(num_of_samples * (i + 1)), 0] = i
-		b = np.ascontiguousarray(x).view(np.dtype((np.void, x.dtype.itemsize * x.shape[1])))
-		unique_array, unique_indices, unique_inverse_x, unique_counts = \
-			np.unique(b, return_index=True, return_inverse=True, return_counts=True)
-		b_y = np.ascontiguousarray(labels).view(np.dtype((np.void, labels.dtype.itemsize * labels.shape[1])))
-		unique_array_y, unique_indices_y, unique_inverse_y, unique_counts_y = \
-			np.unique(b_y, return_index=True, return_inverse=True, return_counts=True)
-		pys1 = unique_counts_y / float(np.sum(unique_counts_y))
-		iter_infomration.append(
-			calc_information_for_layer(data=new_data, bins=bins, unique_inverse_x=unique_inverse_x,
-			                           unique_inverse_y=unique_inverse_y, pxs=pxs, pys1=pys1))
-		params = np.array(iter_infomration)
-		return params
+# def calc_by_sampling_neurons(ws_iter_index, num_of_samples, label, sigma, bins, pxs):
+# 	iter_infomration = []
+# 	for j in range(len(ws_iter_index)):
+# 		data = ws_iter_index[j]
+# 		new_data = np.zeros((num_of_samples * data.shape[0], data.shape[1]))
+# 		labels = np.zeros((num_of_samples * label.shape[0], label.shape[1]))
+# 		x = np.zeros((num_of_samples * data.shape[0], 2))
+# 		for i in range(data.shape[0]):
+# 			cov_matrix = np.eye(data[i, :].shape[0]) * sigma
+# 			t_i = np.random.multivariate_normal(data[i, :], cov_matrix, num_of_samples)
+# 			new_data[num_of_samples * i:(num_of_samples * (i + 1)), :] = t_i
+# 			labels[num_of_samples * i:(num_of_samples * (i + 1)), :] = label[i, :]
+# 			x[num_of_samples * i:(num_of_samples * (i + 1)), 0] = i
+# 		b = np.ascontiguousarray(x).view(np.dtype((np.void, x.dtype.itemsize * x.shape[1])))
+# 		unique_array, unique_indices, unique_inverse_x, unique_counts = \
+# 			np.unique(b, return_index=True, return_inverse=True, return_counts=True)
+# 		b_y = np.ascontiguousarray(labels).view(np.dtype((np.void, labels.dtype.itemsize * labels.shape[1])))
+# 		unique_array_y, unique_indices_y, unique_inverse_y, unique_counts_y = \
+# 			np.unique(b_y, return_index=True, return_inverse=True, return_counts=True)
+# 		pys1 = unique_counts_y / float(np.sum(unique_counts_y))
+# 		iter_infomration.append(
+# 			calc_information_for_layer(data=new_data, bins=bins, unique_inverse_x=unique_inverse_x,
+# 			                           unique_inverse_y=unique_inverse_y, pxs=pxs, pys1=pys1))
+# 		params = np.array(iter_infomration)
+# 		return params
 
 
 def calc_information_for_epoch(iter_index, interval_information_display, ws_iter_index, bins, unique_inverse_x,
@@ -110,44 +110,44 @@ def calc_information_for_epoch(iter_index, interval_information_display, ws_iter
                                sigma=0.5, ss=[], ks=[]):
 	"""Calculate the information for all the layers for specific epoch"""
 	np.random.seed(None)
-	if calc_full_and_vartional:
-		# Vartional information
-		params_vartional = [
-			calc_varitional_information(ws_iter_index[i], label, model_path, i, len(ws_iter_index) - 1, iter_index,
-			                            input_size, layerSize, ss[i], pys, ks[i], search_sigma=False) for i in
-			range(len(ws_iter_index))]
-		# Full plug-in infomration
-		params_original = np.array(
-			[calc_information_for_layer_with_other(data=ws_iter_index[i], bins=bins, unique_inverse_x=unique_inverse_x,
-			                                       unique_inverse_y=unique_inverse_y, label=label,
-			                                       b=b, b1=b1, len_unique_a=len_unique_a, pxs=pxs,
-			                                       p_YgX=py_x, pys1=pys1)
-			 for i in range(len(ws_iter_index))])
-		# Combine them
-		params = []
-		for i in range(len(ws_iter_index)):
-			current_params = params_original[i]
-			current_params_vartional = params_vartional[i]
-			current_params['IXT_vartional'] = current_params_vartional['local_IXT']
-			current_params['ITY_vartional'] = current_params_vartional['local_ITY']
-			params.append(current_params)
-	elif calc_vartional_information:
-		params = [
-			calc_varitional_information(ws_iter_index[i], label, model_path, i, len(ws_iter_index) - 1, iter_index,
-			                            input_size, layerSize, ss[i], pys, ks[i], search_sigma=True) for i in
-			range(len(ws_iter_index))]
-	# Calc infomration of only subset of the neurons
-	elif calc_information_by_sampling:
-		parmas = calc_by_sampling_neurons(ws_iter_index=ws_iter_index, num_of_samples=num_of_samples, label=label,
-		                                  sigma=sigma, bins=bins, pxs=pxs)
-
-	elif calc_regular_information:
-		params = np.array(
-			[calc_information_for_layer_with_other(data=ws_iter_index[i], bins=bins, unique_inverse_x=unique_inverse_x,
-			                                       unique_inverse_y=unique_inverse_y, label=label,
-			                                       b=b, b1=b1, len_unique_a=len_unique_a, pxs=pxs,
-			                                       p_YgX=py_x, pys1=pys1)
-			 for i in range(len(ws_iter_index))])
+	# if calc_full_and_vartional:
+	# 	# Vartional information
+	# 	params_vartional = [
+	# 		calc_varitional_information(ws_iter_index[i], label, model_path, i, len(ws_iter_index) - 1, iter_index,
+	# 		                            input_size, layerSize, ss[i], pys, ks[i], search_sigma=False) for i in
+	# 		range(len(ws_iter_index))]
+	# 	# Full plug-in infomration
+	# 	params_original = np.array(
+	# 		[calc_information_for_layer_with_other(data=ws_iter_index[i], bins=bins, unique_inverse_x=unique_inverse_x,
+	# 		                                       unique_inverse_y=unique_inverse_y, label=label,
+	# 		                                       b=b, b1=b1, len_unique_a=len_unique_a, pxs=pxs,
+	# 		                                       p_YgX=py_x, pys1=pys1)
+	# 		 for i in range(len(ws_iter_index))])
+	# 	# Combine them
+	# 	params = []
+	# 	for i in range(len(ws_iter_index)):
+	# 		current_params = params_original[i]
+	# 		current_params_vartional = params_vartional[i]
+	# 		current_params['IXT_vartional'] = current_params_vartional['local_IXT']
+	# 		current_params['ITY_vartional'] = current_params_vartional['local_ITY']
+	# 		params.append(current_params)
+	# elif calc_vartional_information:
+	# 	params = [
+	# 		calc_varitional_information(ws_iter_index[i], label, model_path, i, len(ws_iter_index) - 1, iter_index,
+	# 		                            input_size, layerSize, ss[i], pys, ks[i], search_sigma=True) for i in
+	# 		range(len(ws_iter_index))]
+	# # Calc infomration of only subset of the neurons
+	# elif calc_information_by_sampling:
+	# 	parmas = calc_by_sampling_neurons(ws_iter_index=ws_iter_index, num_of_samples=num_of_samples, label=label,
+	# 	                                  sigma=sigma, bins=bins, pxs=pxs)
+	#
+	# elif calc_regular_information:
+	params = np.array(
+		[calc_information_for_layer_with_other(data=ws_iter_index[i], bins=bins, unique_inverse_x=unique_inverse_x,
+											   unique_inverse_y=unique_inverse_y, label=label,
+											   b=b, b1=b1, len_unique_a=len_unique_a, pxs=pxs,
+											   p_YgX=py_x, pys1=pys1)
+		 for i in range(len(ws_iter_index))])
 
 	if np.mod(iter_index, interval_information_display) == 0:
 		print('Calculated The information of epoch number - {0}'.format(iter_index))

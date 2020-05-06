@@ -4,8 +4,8 @@ import numpy as np
 import multiprocessing
 from joblib import Parallel, delayed
 
-NUM_CORES = multiprocessing.cpu_count()
-
+#NUM_CORES = multiprocessing.cpu_count()
+NUM_CORES = 1
 
 def calc_entropy_for_specipic_t(current_ts, px_i):
 	"""Calc entropy for specipic t"""
