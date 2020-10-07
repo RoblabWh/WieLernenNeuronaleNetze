@@ -336,10 +336,10 @@ def load_figures(mode, str_names=None):
         bar_font = 28
         fig_size = (14, 10)
         font_size = 34
-        f, (axes) = plt.subplots(1, len(str_names), sharey=True, figsize=fig_size)
-        if len(str_names) == 1:
-            axes = np.vstack(np.array([axes]))
-        f.subplots_adjust(left=0.097, bottom=0.12, right=.87, top=0.99, wspace=0.03, hspace=0.03)
+        #f, (axes) = plt.subplots(1, len(str_names), sharey=True, figsize=fig_size)
+        #if len(str_names) == 1:
+        #    axes = np.vstack(np.array([axes]))
+        #f.subplots_adjust(left=0.097, bottom=0.12, right=.87, top=0.99, wspace=0.03, hspace=0.03)
         colorbar_axis = [0.905, 0.12, 0.03, 0.82]
         xticks = [1, 3, 5, 7, 9, 11]
         yticks = [0, 0.2, 0.4, 0.6, 0.8, 1]
@@ -380,7 +380,7 @@ def load_figures(mode, str_names=None):
 
         yticks = [0,  1,  2, 3, 3]
         xticks = [2, 5, 8, 11,14, 17]
-    return font_size, axis_font, bar_font, colorbar_axis, sizes, yticks, xticks,title_strs, f, axes
+    return font_size, axis_font, bar_font, colorbar_axis, sizes, yticks, xticks,title_strs, None, None
 
 
 def plot_figures(str_names, mode, save_name):
@@ -406,9 +406,12 @@ def plot_figures(str_names, mode, save_name):
             elif mode ==6:
                 plot_norms(axes, epochsInds,data_array['norms1'],data_array['norms2'])
             else:
+                #plot_all_epochs(data_array, I_XT_array, I_TY_array, None, epochsInds, None, i, j, None, None, None, None,
+                #                None, None, None, None, save_name, plot_error=False)
+                pass
                 plot_all_epochs(data_array, I_XT_array, I_TY_array, axes, epochsInds, f, i, j, sizes[i][j], font_size, yticks, xticks,
-                                colorbar_axis, title_strs[i][j], axis_font, bar_font, save_name)
-    plt.show()
+                                colorbar_axis, title_strs[i][j], axis_font, bar_font, save_name, plot_error=False)
+    #plt.show()
 
 
 def plot_norms(axes, epochsInds, norms1, norms2):
