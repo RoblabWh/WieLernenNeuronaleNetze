@@ -13,17 +13,15 @@ To deepen the Information Threory, there is a step-by-step implementation in mut
 
 # Credits and Links
 
-https://www.youtube.com/watch?v=pFWiauHOFpY
-
-https://www.quantamagazine.org/new-theory-cracks-open-the-black-box-of-deep-learning-20170921/
-
 https://arxiv.org/abs/1611.03530
 
 https://arxiv.org/abs/1706.05394
 
 https://arxiv.org/abs/1703.00810
 
+https://www.youtube.com/watch?v=pFWiauHOFpY
 
+https://www.quantamagazine.org/new-theory-cracks-open-the-black-box-of-deep-learning-20170921/
 
 https://www.youtube.com/watch?v=0Ey02HT_1Ho
 
