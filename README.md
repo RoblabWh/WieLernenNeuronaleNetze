@@ -2,7 +2,7 @@
 
 This repro implements 3 ipython notebooks. 
 
-The first  (Memorization) deals with the question of when a DNN simply "memorize data" or when it is able to abstract and generalize the data. Therefore, a bridge to overfitting (overfitting) is built and it is shown how overfitting and "memorization" are related, as well as ways of preventing this i.e. regularization. It shows that N.N. useally memorize the data instead of  generalize. It uses the MNIST data set and randomly destroies the output. The N.N is able to learn the random mapping. 
+The first  (Memorization) deals with the question of when a DNN simply "memorize data" or when it is able to abstract and generalize the data. Therefore, a bridge to overfitting (overfitting) is built and it is shown how overfitting and "memorization" are related, as well as ways of preventing this i.e. regularization. It shows that N.N. useally memorize the data instead of  generalize. It uses the CIFAR10 Dataset and randomly destroys the output. The N.N is able to learn the random mapping. 
 
 # Informationstheorie und Neuronale Netze (Information theory and neural networks)
 
