@@ -7,13 +7,11 @@ dependencies:
   - numpy
   - pandas
   - python-graphviz
-  - tensorflow=1.15
+  - tensorflow=1.15.4
   - joblib
   - matplotlib
   - pillow
   - jupyterlab
   - keras
-  - pip:
-    - -e ./IDNNs-notebook
 prefix: /home/robin/miniconda3/envs/wvin
 
