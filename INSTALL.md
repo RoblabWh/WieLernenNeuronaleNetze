@@ -3,8 +3,10 @@
 ## With conda
 
 0. Install anaconda or miniconda for your platform
-0. Run `conda env create --file environment.yml`
-0. Activate the environment with `conda activate wvin`
+1. git clone https://github.com/RoblabWh/WieLernenNeuronaleNetze
+2. Run `conda env create --file environment.yml python=3.7`
+3. Activate the environment with `conda activate wvin`
+4. pip install -r requirements.txt
 
 ## With pip
 
