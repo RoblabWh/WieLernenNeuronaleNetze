@@ -1,18 +1,20 @@
-'''
-Calculate the information in the network
-Can be by the full distribution rule (for small netowrk) or bt diffrenet approximation method
-'''
+"""Calculate the information in the network.
+
+Can be by the full distribution rule (for small network) or by different approximation methods.
+PyTorch version.
+"""
 import multiprocessing
 import warnings
+
 import numpy as np
-import tensorflow as tf
-import idnns.information.information_utilities as inf_ut
-from idnns.networks import model as mo
-from idnns.information.mutual_info_estimation import calc_varitional_information
-warnings.filterwarnings("ignore")
 from joblib import Parallel, delayed
-NUM_CORES = multiprocessing.cpu_count()
+
+import idnns.information.information_utilities as inf_ut
+from idnns.information.mutual_info_estimation import calc_varitional_information
 from idnns.information.mutual_information_calculation import *
+
+warnings.filterwarnings("ignore")
+NUM_CORES = multiprocessing.cpu_count()
 
 
 def calc_information_for_layer(data, bins, unique_inverse_x, unique_inverse_y, pxs, pys1):
@@ -160,6 +162,8 @@ def extract_probs(label, x):
 	b = np.ascontiguousarray(x).view(np.dtype((np.void, x.dtype.itemsize * x.shape[1])))
 	unique_array, unique_indices, unique_inverse_x, unique_counts = \
 		np.unique(b, return_index=True, return_inverse=True, return_counts=True)
+	# Ensure unique_inverse_x is 1D (newer numpy may return 2D with view trick)
+	unique_inverse_x = np.squeeze(unique_inverse_x)
 	unique_a = x[unique_indices]
 	b1 = np.ascontiguousarray(unique_a).view(np.dtype((np.void, unique_a.dtype.itemsize * unique_a.shape[1])))
 	pxs = unique_counts / float(np.sum(unique_counts))
@@ -172,6 +176,8 @@ def extract_probs(label, x):
 	b_y = np.ascontiguousarray(label).view(np.dtype((np.void, label.dtype.itemsize * label.shape[1])))
 	unique_array_y, unique_indices_y, unique_inverse_y, unique_counts_y = \
 		np.unique(b_y, return_index=True, return_inverse=True, return_counts=True)
+	# Ensure unique_inverse_y is 1D
+	unique_inverse_y = np.squeeze(unique_inverse_y)
 	pys1 = unique_counts_y / float(np.sum(unique_counts_y))
 	return pys, pys1, p_y_given_x, b1, b, unique_a, unique_inverse_x, unique_inverse_y, pxs
 
@@ -181,7 +187,7 @@ def get_information(ws, x, label, num_of_bins, interval_information_display, mod
 	"""Calculate the information for the network for all the epochs and all the layers"""
 	print('Start calculating the information...')
 	bins = np.linspace(-1, 1, num_of_bins)
-	label = np.array(label).astype(np.float)
+	label = np.array(label).astype(np.float64)
 	pys, pys1, p_y_given_x, b1, b, unique_a, unique_inverse_x, unique_inverse_y, pxs = extract_probs(label, x)
 	if calc_parallel:
 		params = np.array(Parallel(n_jobs=NUM_CORES

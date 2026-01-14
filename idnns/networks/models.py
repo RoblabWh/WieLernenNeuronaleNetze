@@ -1,125 +1,177 @@
-import tensorflow as tf
-from idnns.networks.ops import *
+"""PyTorch neural network architectures for Information Bottleneck analysis."""
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class MultiLayerPerceptron(nn.Module):
+    """Multi-layer perceptron that captures intermediate activations."""
+
+    def __init__(self, n_input, n_classes, n_hidden_1, n_hidden_2):
+        super().__init__()
+        self.fc1 = nn.Linear(n_input, n_hidden_1)
+        self.fc2 = nn.Linear(n_hidden_1, n_hidden_2)
+        self.fc_out = nn.Linear(n_hidden_2, n_classes)
+
+        # Random normal initialization (matches TF version)
+        nn.init.normal_(self.fc1.weight)
+        nn.init.normal_(self.fc1.bias)
+        nn.init.normal_(self.fc2.weight)
+        nn.init.normal_(self.fc2.bias)
+        nn.init.normal_(self.fc_out.weight)
+        nn.init.normal_(self.fc_out.bias)
+
+        self.hidden = []
+        self.inputs = []
+
+    def forward(self, x):
+        self.hidden = [x]
+        self.inputs = []
+
+        # Layer 1 with ReLU
+        layer_1_input = self.fc1(x)
+        layer_1 = F.relu(layer_1_input)
+        self.inputs.append(layer_1_input)
+        self.hidden.append(layer_1)
+
+        # Layer 2 with ReLU
+        layer_2_input = self.fc2(layer_1)
+        layer_2 = F.relu(layer_2_input)
+        self.inputs.append(layer_2_input)
+        self.hidden.append(layer_2)
+
+        # Output layer with softmax
+        output_input = self.fc_out(layer_2)
+        y_output = F.softmax(output_input, dim=1)
+        self.inputs.append(output_input)
+        self.hidden.append(y_output)
+
+        return y_output
+
+
+class DeepCNN(nn.Module):
+    """Deep CNN for MNIST classification with activation capture.
+
+    This builds a CNN matching the original TensorFlow architecture:
+    Conv1 (5x5, 32) -> Pool -> Conv2 (5x5, 64) -> Pool -> FC1 (1024) -> Dropout -> FC2 (10)
+    """
+
+    def __init__(self, dropout_prob=0.5):
+        super().__init__()
+
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=5, padding='same')
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=5, padding='same')
+        self.pool = nn.MaxPool2d(2, 2)
+
+        # Fully connected layers
+        self.fc1 = nn.Linear(7 * 7 * 64, 1024)
+        self.fc2 = nn.Linear(1024, 10)
+        self.dropout = nn.Dropout(dropout_prob)
+
+        # Initialize weights with truncated normal (std=0.1)
+        nn.init.trunc_normal_(self.conv1.weight, std=0.1)
+        nn.init.constant_(self.conv1.bias, 0.1)
+        nn.init.trunc_normal_(self.conv2.weight, std=0.1)
+        nn.init.constant_(self.conv2.bias, 0.1)
+        nn.init.trunc_normal_(self.fc1.weight, std=0.1)
+        nn.init.constant_(self.fc1.bias, 0.1)
+        nn.init.trunc_normal_(self.fc2.weight, std=0.1)
+        nn.init.constant_(self.fc2.bias, 0.1)
+
+        self.hidden = []
+        self.inputs = []
+        self.keep_prob = None  # For compatibility
+
+    def forward(self, x, keep_prob=None):
+        """Forward pass capturing all intermediate activations.
+
+        Args:
+            x: Input tensor of shape (batch, 784) or (batch, 1, 28, 28)
+            keep_prob: Dropout keep probability (for compatibility, uses module's dropout)
+        """
+        self.hidden = []
+        self.inputs = []
+
+        # Reshape if needed
+        if x.dim() == 2:
+            x = x.view(-1, 1, 28, 28)
+
+        self.hidden.append(x.view(x.size(0), -1))  # Flattened input
+
+        # Conv1 + Pool
+        input_conv1 = self.conv1(x)
+        h_conv1 = F.relu(input_conv1)
+        h_pool1 = self.pool(h_conv1)
+        self.inputs.append(input_conv1)
+        self.hidden.append(h_pool1)
+
+        # Conv2 + Pool
+        input_conv2 = self.conv2(h_pool1)
+        h_conv2 = F.relu(input_conv2)
+        h_pool2 = self.pool(h_conv2)
+        self.inputs.append(input_conv2)
+        self.hidden.append(h_pool2)
+
+        # Flatten
+        h_pool2_flat = h_pool2.view(-1, 7 * 7 * 64)
+
+        # FC1 + Dropout
+        input_fc1 = self.fc1(h_pool2_flat)
+        h_fc1 = F.relu(input_fc1)
+        h_fc1_drop = self.dropout(h_fc1) if self.training else h_fc1
+        self.inputs.append(input_fc1)
+        self.hidden.append(h_fc1_drop)
+
+        # Output
+        input_y_conv = self.fc2(h_fc1_drop)
+        y_conv = F.softmax(input_y_conv, dim=1)
+        self.inputs.append(input_y_conv)
+        self.hidden.append(y_conv)
+
+        return y_conv
 
 
 def multi_layer_perceptron(x, n_input, n_classes, n_hidden_1, n_hidden_2):
-	hidden = []
-	input = []
-	hidden.append(x)
-	# Network Parameters
-	# n_input = x.shape[0]  # MNIST data input (img shape: 28*28)
-	# n_classes = 10  # MNIST total classes (0-9 digits)
+    """Functional interface for multi-layer perceptron.
 
-	weights = {
-		'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
-		'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-		'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes]))
-	}
-	biases = {
-		'b1': tf.Variable(tf.random_normal([n_hidden_1])),
-		'b2': tf.Variable(tf.random_normal([n_hidden_2])),
-		'out': tf.Variable(tf.random_normal([n_classes]))
-	}
+    This function creates and runs an MLP, returning outputs and captured activations.
+    For compatibility with original TensorFlow API.
 
-	# Hidden layer with RELU activation
-	layer_1_input = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
-	layer_1 = tf.nn.relu(layer_1_input)
-	input.append(layer_1)
-	hidden.append(layer_1)
-	# Hidden layer with RELU activation
-	layer_2_input = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
-	layer_2 = tf.nn.relu(layer_2_input)
-	input.append(layer_2_input)
-	hidden.append(layer_2)
-	# Output layer with linear activation
-	input_y = tf.matmul(layer_2, weights['out']) + biases['out']
-	y_output = tf.nn.softmax(input_y)
-	input.append(y_output)
-	hidden.append(y_output)
-	return y_output, hidden, input
+    Args:
+        x: Input tensor
+        n_input: Input size
+        n_classes: Number of output classes
+        n_hidden_1: First hidden layer size
+        n_hidden_2: Second hidden layer size
+
+    Returns:
+        Tuple of (output, hidden_layers, inputs)
+    """
+    model = MultiLayerPerceptron(n_input, n_classes, n_hidden_1, n_hidden_2)
+    if isinstance(x, torch.Tensor):
+        output = model(x)
+    else:
+        output = model(torch.FloatTensor(x))
+    return output, model.hidden, model.inputs
 
 
 def deepnn(x):
-	"""deepnn builds the graph for a deep net for classifying digits.
-	Args:
-	  x: an input tensor with the dimensions (N_examples, 784), where 784 is the
-	  number of pixels in a standard MNIST image.
-	Returns:
-	  A tuple (y, keep_prob). y is a tensor of shape (N_examples, 10), with values
-	  equal to the logits of classifying the digit into one of 10 classes (the
-	  digits 0-9). keep_prob is a scalar placeholder for the probability of
-	  dropout.
-	"""
-	hidden = []
-	input = []
-	x_image = tf.reshape(x, [-1, 28, 28, 1])
-	hidden.append(x)
-	# First convolutional layer - maps one grayscale image to 32 feature maps.
-	with tf.name_scope('conv1'):
-		with tf.name_scope('weights'):
-			W_conv1 = weight_variable([5, 5, 1, 32])
-			variable_summaries(W_conv1)
-		with tf.name_scope('biases'):
-			b_conv1 = bias_variable([32])
-			variable_summaries(b_conv1)
-		with tf.name_scope('activation'):
-			input_con1 = conv2d(x_image, W_conv1) + b_conv1
-			h_conv1 = tf.nn.relu(input_con1)
-			tf.summary.histogram('activations', h_conv1)
-		with tf.name_scope('max_pol'):
-			# Pooling layer - downsamples by 2X.
-			h_pool1 = max_pool_2x2(h_conv1)
-		input.append(input_con1)
-		hidden.append(h_pool1)
-	with tf.name_scope('conv2'):
-		# Second convolutional layer -- maps 32 feature maps to 64.
-		with tf.name_scope('weights'):
-			W_conv2 = weight_variable([5, 5, 32, 64])
-			variable_summaries(W_conv2)
-		with tf.name_scope('biases'):
-			b_conv2 = bias_variable([64])
-			variable_summaries(b_conv2)
-		with tf.name_scope('activation'):
-			input_con2 = conv2d(h_pool1, W_conv2) + b_conv2
-			h_conv2 = tf.nn.relu(input_con2)
-			tf.summary.histogram('activations', h_conv2)
-		with tf.name_scope('max_pol'):
-			# Second pooling layer.
-			h_pool2 = max_pool_2x2(h_conv2)
-		input.append(input_con2)
-		hidden.append(h_pool2)
-	# Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
-	# is down to 7x7x64 feature maps -- maps this to 1024 features.
-	with tf.name_scope('FC1'):
-		with tf.name_scope('weights'):
-			W_fc1 = weight_variable([7 * 7 * 64, 1024])
-			variable_summaries(W_fc1)
-		with tf.name_scope('biases'):
-			b_fc1 = bias_variable([1024])
-			variable_summaries(b_fc1)
-		h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
-		with tf.name_scope('activation'):
-			input_fc1 = tf.matmul(h_pool2_flat, W_fc1) + b_fc1
-			h_fc1 = tf.nn.relu(input_fc1)
-			tf.summary.histogram('activations', h_fc1)
+    """Functional interface for deep CNN.
 
-	with tf.name_scope('drouput'):
-		keep_prob = tf.placeholder(tf.float32)
-		tf.summary.scalar('dropout_keep_probability', keep_prob)
-		h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
-		input.append(input_fc1)
-		hidden.append(h_fc1_drop)
-	# Map the 1024 features to 10 classes, one for each digit
-	with tf.name_scope('FC2'):
-		with tf.name_scope('weights'):
-			W_fc2 = weight_variable([1024, 10])
-			variable_summaries(W_fc2)
-		with tf.name_scope('biases'):
-			b_fc2 = bias_variable([10])
-			variable_summaries(b_fc2)
+    This function creates and runs a CNN, returning outputs and captured activations.
+    For compatibility with original TensorFlow API.
 
-	input_y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
-	y_conv = tf.nn.softmax(input_y_conv)
-	input.append(input_y_conv)
-	hidden.append(y_conv)
-	return y_conv, keep_prob, hidden, input
+    Args:
+        x: Input tensor of shape (batch, 784) for flattened MNIST images
+
+    Returns:
+        Tuple of (output, keep_prob_placeholder, hidden_layers, inputs)
+        Note: keep_prob is None in PyTorch version (dropout handled by module)
+    """
+    model = DeepCNN()
+    if isinstance(x, torch.Tensor):
+        output = model(x)
+    else:
+        output = model(torch.FloatTensor(x))
+    return output, None, model.hidden, model.inputs

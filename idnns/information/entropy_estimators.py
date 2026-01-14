@@ -25,7 +25,7 @@ def entropy(x, k=3, base=2):
     tree = ss.cKDTree(x)
     nn = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in x]
     const = digamma(N) - digamma(k) + d * log(2)
-    return (const + d * np.mean(map(log, nn))) / log(base)
+    return (const + d * np.mean(list(map(log, nn)))) / log(base)
 
 def centropy(x, y, k=3, base=2):
   """ The classic K-L k-nearest neighbor continuous entropy estimator for the
@@ -103,7 +103,7 @@ def kldiv(x, xp, k=3, base=2):
     treep = ss.cKDTree(xp)
     nn = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in x]
     nnp = [treep.query(point, k, p=float('inf'))[0][k - 1] for point in x]
-    return (const + d * np.mean(map(log, nnp)) - d * np.mean(map(log, nn))) / log(base)
+    return (const + d * np.mean(list(map(log, nnp))) - d * np.mean(list(map(log, nn)))) / log(base)
 
 
 # DISCRETE ESTIMATORS
@@ -153,12 +153,12 @@ def hist(sx):
         if type(s) == list:
           s = tuple(s)
         d[s] = d.get(s, 0) + 1
-    return map(lambda z: float(z) / len(sx), d.values())
+    return list(map(lambda z: float(z) / len(sx), d.values()))
 
 
 def entropyfromprobs(probs, base=2):
     # Turn a normalized list of probabilities of discrete outcomes into entropy (base 2)
-    return -sum(map(elog, probs)) / log(base)
+    return -sum(list(map(elog, probs))) / log(base)
 
 
 def elog(x):

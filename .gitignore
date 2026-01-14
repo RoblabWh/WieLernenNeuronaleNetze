@@ -5,3 +5,8 @@ __pycache__/
 jobs/
 *.egg-info/
 figure.jpg
+
+# Downloaded datasets (get recreated automatically)
+data/MNIST/
+data/cifar-10-batches-py/
+data/cifar-10-python.tar.gz

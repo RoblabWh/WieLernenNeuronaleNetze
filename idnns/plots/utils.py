@@ -1,10 +1,13 @@
 import matplotlib
-
-matplotlib.use("TkAgg")
-import scipy.io as sio
-
-import matplotlib.pyplot as plt
 import os
+
+# Use Agg backend for non-interactive environments (notebooks, scripts)
+# TkAgg requires tkinter which may not be available
+if os.environ.get('DISPLAY') is None or 'JUPYTER' in os.environ.get('JPY_PARENT_PID', ''):
+    matplotlib.use("Agg")
+
+import scipy.io as sio
+import matplotlib.pyplot as plt
 import numpy as np
 import sys
 

@@ -1,24 +1,33 @@
 """Plot the networks in the information plane"""
 import matplotlib
-matplotlib.use("TkAgg")
+# Use Agg backend for non-interactive environments (notebooks, scripts)
+# TkAgg requires tkinter which may not be available
+import os
+if os.environ.get('DISPLAY') is None or 'JUPYTER' in os.environ.get('JPY_PARENT_PID', ''):
+    matplotlib.use("Agg")
 import numpy as np
 import _pickle as cPickle
-# import cPickle
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import scipy.io as sio
 import scipy.stats as sis
-import os
 import matplotlib.animation as animation
 import math
 import os.path
 import idnns.plots.utils as utils
-import tkinter as tk
 from numpy import linalg as LA
 
-from tkinter import filedialog
+# Optional tkinter import for file dialogs (only used in __main__)
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+    HAS_TKINTER = True
+except ImportError:
+    HAS_TKINTER = False
+    tk = None
+    filedialog = None
 LAYERS_COLORS  = ['red', 'blue', 'green', 'yellow', 'pink', 'orange']
 
 def plot_all_epochs(gen_data, I_XT_array, I_TY_array, axes, epochsInds, f, index_i, index_j, size_ind,
@@ -660,10 +669,15 @@ if __name__ == '__main__':
             save_name = ALL_SAMPLES
             mode =3
             str_names = [[prex+'t_32_1.pickle']]
-        root = tk.Tk()
-        root.withdraw()
-        file_path = filedialog.askopenfilename()
-        str_names = [[('/').join(file_path.split('/')[:-1]) + '/']]
+        if HAS_TKINTER:
+            root = tk.Tk()
+            root.withdraw()
+            file_path = filedialog.askopenfilename()
+            str_names = [[('/').join(file_path.split('/')[:-1]) + '/']]
+        else:
+            print("tkinter not available. Please specify file path manually.")
+            import sys
+            sys.exit(1)
         if do_plot_action:
             plot_figures(str_names, mode, save_name)
         if do_plot_norms:
